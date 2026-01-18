@@ -439,9 +439,11 @@ def create_ventilation_scheme():
     
     # Calculate exhaust grille positions (same number as supply diffusers)
     num_grilles = num_diffusers
+    exhaust_span = exhaust_duct_end_x - exhaust_duct_start_x
+    exhaust_spacing = exhaust_span / (num_grilles - 1) if num_grilles > 1 else 0
     grille_positions = []
     for i in range(num_grilles):
-        x_pos = exhaust_duct_start_x + i * spacing if num_grilles > 1 else 2 + room_length/2
+        x_pos = exhaust_duct_start_x + i * exhaust_spacing if num_grilles > 1 else 2 + room_length/2
         grille_positions.append((x_pos, exhaust_duct_y))
     
     # Draw EXHAUST branch ducts and grilles
