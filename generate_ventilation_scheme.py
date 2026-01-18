@@ -30,7 +30,7 @@ def calculate_diffusers_and_pressure_loss():
     room_volume = room_area * ceiling_height  # m³
     
     # Требования к воздухообмену для нежилых помещений
-    # Используется типовое значение 6 кратностей в час для офиса/коммерческого помещения
+    # Используется типовое значение 6 кратности в час для офиса/коммерческого помещения
     air_changes_per_hour = 6
     total_airflow = room_volume * air_changes_per_hour  # m³/h
     total_airflow_m3s = total_airflow / 3600  # m³/s
