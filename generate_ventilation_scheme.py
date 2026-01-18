@@ -1,78 +1,268 @@
 #!/usr/bin/env python3
 """
-Ventilation System Scheme Generator
+Ventilation System Scheme Generator with Pressure Loss Calculations
 
-Creates a schematic visualization of a ventilation system with:
-- Room: 119 m², height 2.9 m
-- Air exchange: 2070.6 m³/h
-- 11 diffusers (ДПУ-М 125)
-- Main duct: 250mm diameter
+Creates a schematic visualization of a supply ventilation system with:
+- Room: 119 m², height 2.91 m
+- Supply fan: 315mm
+- Processing equipment: silencer, filter, heater
+- Main duct: 160mm diameter
 - Branch ducts: 125mm diameter
+- Calculates optimal number of diffusers and pressure losses
 """
 
 import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
-from matplotlib.patches import Rectangle, Circle, FancyBboxPatch
+from matplotlib.patches import Rectangle, Circle, FancyBboxPatch, FancyArrowPatch
+import math
+
+def calculate_diffusers_and_pressure_loss():
+    """Calculate optimal number of diffusers and pressure losses."""
+    
+    # Room parameters
+    room_area = 119  # m²
+    ceiling_height = 2.91  # m
+    room_volume = room_area * ceiling_height  # m³
+    
+    # Air exchange requirements for non-residential space
+    # Using typical 6 air changes per hour for office/commercial space
+    air_changes_per_hour = 6
+    total_airflow = room_volume * air_changes_per_hour  # m³/h
+    total_airflow_m3s = total_airflow / 3600  # m³/s
+    
+    # Diffuser specifications (ДПУ-М 125)
+    diffuser_diameter = 125  # mm
+    diffuser_diameter_m = diffuser_diameter / 1000  # m
+    
+    # Recommended airflow per diffuser: 150-250 m³/h for ДПУ-М 125
+    # Using 200 m³/h as optimal for comfort
+    airflow_per_diffuser = 200  # m³/h
+    
+    # Calculate number of diffusers
+    num_diffusers = math.ceil(total_airflow / airflow_per_diffuser)
+    actual_airflow_per_diffuser = total_airflow / num_diffusers
+    
+    # Air properties (at 20°C)
+    air_density = 1.2  # kg/m³
+    air_viscosity = 1.81e-5  # Pa·s
+    
+    # Duct dimensions
+    main_duct_diameter = 160  # mm
+    branch_duct_diameter = 125  # mm
+    supply_fan_diameter = 315  # mm
+    
+    # Convert to meters
+    D_main = main_duct_diameter / 1000
+    D_branch = branch_duct_diameter / 1000
+    D_fan = supply_fan_diameter / 1000
+    
+    # Estimated duct lengths
+    main_duct_length = 11  # m (approximate room length)
+    branch_duct_length = 2  # m (average branch length)
+    inlet_duct_length = 2  # m (from fan to room)
+    
+    # Calculate velocities
+    v_main = total_airflow_m3s / (math.pi * (D_main/2)**2)  # m/s
+    v_branch = (actual_airflow_per_diffuser/3600) / (math.pi * (D_branch/2)**2)  # m/s
+    v_fan = total_airflow_m3s / (math.pi * (D_fan/2)**2)  # m/s
+    
+    # Pressure loss calculations
+    # 1. Friction losses in ducts (Darcy-Weisbach)
+    roughness = 0.0001  # m (for smooth metal ducts)
+    
+    # Reynolds number and friction factor for main duct
+    Re_main = (air_density * v_main * D_main) / air_viscosity
+    if Re_main < 2300:
+        f_main = 64 / Re_main
+    else:
+        # Using Colebrook-White approximation (Swamee-Jain)
+        f_main = 0.25 / (math.log10(roughness/(3.7*D_main) + 5.74/Re_main**0.9))**2
+    
+    # Friction loss in main duct
+    delta_P_main = f_main * (main_duct_length / D_main) * (air_density * v_main**2 / 2)
+    
+    # Reynolds number and friction factor for branch ducts
+    Re_branch = (air_density * v_branch * D_branch) / air_viscosity
+    if Re_branch < 2300:
+        f_branch = 64 / Re_branch
+    else:
+        f_branch = 0.25 / (math.log10(roughness/(3.7*D_branch) + 5.74/Re_branch**0.9))**2
+    
+    # Friction loss in branch ducts (total for all branches)
+    delta_P_branch = f_branch * (branch_duct_length / D_branch) * (air_density * v_branch**2 / 2)
+    
+    # 2. Local losses (fittings, transitions, etc.)
+    # Supply fan outlet: ζ = 1.0
+    delta_P_fan_outlet = 1.0 * (air_density * v_fan**2 / 2)
+    
+    # Silencer: typical loss coefficient ζ = 1.5-3.0
+    delta_P_silencer = 2.5 * (air_density * v_main**2 / 2)
+    
+    # Filter: typical loss 50-150 Pa for clean filter
+    delta_P_filter = 100  # Pa
+    
+    # Heater (caloripher): typical loss coefficient ζ = 2.0-4.0
+    delta_P_heater = 3.0 * (air_density * v_main**2 / 2)
+    
+    # Branch tees: ζ = 1.5 per branch
+    delta_P_branches = 1.5 * (air_density * v_branch**2 / 2) * num_diffusers
+    
+    # Diffusers: typical loss 10-20 Pa per diffuser
+    delta_P_diffusers = 15  # Pa per diffuser
+    
+    # Total pressure loss
+    total_pressure_loss = (delta_P_main + delta_P_branch + delta_P_fan_outlet + 
+                          delta_P_silencer + delta_P_filter + delta_P_heater + 
+                          delta_P_branches + delta_P_diffusers)
+    
+    # Add safety factor of 10-15%
+    total_pressure_loss_with_safety = total_pressure_loss * 1.15
+    
+    return {
+        'num_diffusers': num_diffusers,
+        'total_airflow': total_airflow,
+        'airflow_per_diffuser': actual_airflow_per_diffuser,
+        'air_changes': air_changes_per_hour,
+        'v_main': v_main,
+        'v_branch': v_branch,
+        'v_fan': v_fan,
+        'pressure_losses': {
+            'main_duct': delta_P_main,
+            'branch_ducts': delta_P_branch,
+            'fan_outlet': delta_P_fan_outlet,
+            'silencer': delta_P_silencer,
+            'filter': delta_P_filter,
+            'heater': delta_P_heater,
+            'branches': delta_P_branches,
+            'diffusers': delta_P_diffusers,
+            'total': total_pressure_loss,
+            'total_with_safety': total_pressure_loss_with_safety
+        },
+        'room_volume': room_volume
+    }
 
 def create_ventilation_scheme():
     """Generate the ventilation system schematic diagram."""
     
+    # Calculate system parameters
+    calc = calculate_diffusers_and_pressure_loss()
+    
     # Room parameters
     room_area = 119  # m²
-    ceiling_height = 2.9  # m
-    air_exchange = 2070.6  # m³/h
+    ceiling_height = 2.91  # m
     
-    # Assuming a rectangular room with reasonable proportions
-    # For 119 m², let's use approximately 10m x 11.9m
+    # Room dimensions (rectangular)
     room_width = 10.0  # m
     room_length = 11.9  # m
     
     # Ventilation components
-    num_diffusers = 11
-    main_duct_diameter = 250  # mm
+    num_diffusers = calc['num_diffusers']
+    main_duct_diameter = 160  # mm
     branch_duct_diameter = 125  # mm
+    supply_fan_diameter = 315  # mm
     
     # Create figure with appropriate size
-    fig, ax = plt.subplots(figsize=(16, 12))
+    fig, ax = plt.subplots(figsize=(18, 13))
     
     # Draw room outline
-    room_rect = Rectangle((0, 0), room_length, room_width, 
+    room_rect = Rectangle((2, 0), room_length, room_width, 
                           fill=False, edgecolor='black', linewidth=2)
     ax.add_patch(room_rect)
     
     # Add room dimensions
-    ax.annotate('', xy=(room_length, -0.5), xytext=(0, -0.5),
+    ax.annotate('', xy=(2 + room_length, -0.5), xytext=(2, -0.5),
                 arrowprops=dict(arrowstyle='<->', color='black', lw=1.5))
-    ax.text(room_length/2, -0.8, f'{room_length} м', ha='center', fontsize=12, weight='bold')
+    ax.text(2 + room_length/2, -0.8, f'{room_length} м', ha='center', fontsize=12, weight='bold')
     
-    ax.annotate('', xy=(-0.5, room_width), xytext=(-0.5, 0),
+    ax.annotate('', xy=(1.5, room_width), xytext=(1.5, 0),
                 arrowprops=dict(arrowstyle='<->', color='black', lw=1.5))
-    ax.text(-1.2, room_width/2, f'{room_width} м', ha='center', fontsize=12, 
+    ax.text(1.0, room_width/2, f'{room_width} м', ha='center', fontsize=12, 
             rotation=90, va='center', weight='bold')
     
-    # Main duct position (centered horizontally, running along the length)
-    main_duct_y = room_width / 2
-    main_duct_start_x = 0.5
-    main_duct_end_x = room_length - 0.5
+    # Draw supply system components (outside room on left side)
+    component_x = -2.5
+    component_y = room_width / 2
     
-    # Draw main duct (250mm)
-    main_duct_width = 0.25  # representing 250mm in scale
+    # Supply fan (315mm)
+    fan = Circle((component_x, component_y), 0.4, 
+                 fill=True, facecolor='lightcoral', edgecolor='darkred', linewidth=2)
+    ax.add_patch(fan)
+    ax.text(component_x, component_y, 'В', ha='center', va='center', 
+            fontsize=14, weight='bold', color='darkred')
+    ax.text(component_x, component_y - 0.7, 'Вентилятор\nØ315 мм', 
+            ha='center', fontsize=9, weight='bold')
+    
+    # Components along the inlet duct
+    comp_spacing = 1.2
+    
+    # Silencer
+    silencer_x = component_x + comp_spacing
+    silencer = Rectangle((silencer_x - 0.15, component_y - 0.3), 0.3, 0.6,
+                         fill=True, facecolor='lightgray', edgecolor='black', linewidth=1.5)
+    ax.add_patch(silencer)
+    ax.text(silencer_x, component_y + 0.6, 'Глушитель', ha='center', fontsize=8, weight='bold')
+    
+    # Filter
+    filter_x = silencer_x + comp_spacing * 0.8
+    filter_rect = Rectangle((filter_x - 0.15, component_y - 0.3), 0.3, 0.6,
+                            fill=True, facecolor='lightyellow', edgecolor='orange', linewidth=1.5)
+    ax.add_patch(filter_rect)
+    # Add filter pattern
+    for i in range(5):
+        ax.plot([filter_x - 0.1, filter_x + 0.1], 
+                [component_y - 0.2 + i*0.1, component_y - 0.2 + i*0.1], 
+                'orange', linewidth=1)
+    ax.text(filter_x, component_y + 0.6, 'Фильтр', ha='center', fontsize=8, weight='bold')
+    
+    # Heater (Caloripher)
+    heater_x = filter_x + comp_spacing * 0.8
+    heater = Rectangle((heater_x - 0.15, component_y - 0.3), 0.3, 0.6,
+                       fill=True, facecolor='lightpink', edgecolor='red', linewidth=1.5)
+    ax.add_patch(heater)
+    ax.text(heater_x, component_y + 0.6, 'Калорифер', ha='center', fontsize=8, weight='bold')
+    
+    # Draw connecting ducts to room entrance
+    # From fan to silencer
+    ax.plot([component_x + 0.4, silencer_x - 0.15], [component_y, component_y], 
+            'blue', linewidth=4)
+    # From silencer to filter
+    ax.plot([silencer_x + 0.15, filter_x - 0.15], [component_y, component_y], 
+            'blue', linewidth=4)
+    # From filter to heater
+    ax.plot([filter_x + 0.15, heater_x - 0.15], [component_y, component_y], 
+            'blue', linewidth=4)
+    # From heater to room entrance
+    ax.plot([heater_x + 0.15, 2], [component_y, component_y], 
+            'blue', linewidth=4)
+    
+    # Add arrow showing airflow direction
+    arrow = FancyArrowPatch((component_x - 0.6, component_y), (component_x - 0.45, component_y),
+                           arrowstyle='->', mutation_scale=20, linewidth=2, color='red')
+    ax.add_patch(arrow)
+    ax.text(component_x - 0.8, component_y + 0.3, 'Приток', fontsize=9, weight='bold', color='red')
+    
+    # Main duct position (centered horizontally in room)
+    main_duct_y = room_width / 2
+    main_duct_start_x = 2.5
+    main_duct_end_x = 2 + room_length - 0.5
+    
+    # Draw main duct (160mm)
+    main_duct_width = 0.16  # representing 160mm in scale
     main_duct = Rectangle((main_duct_start_x, main_duct_y - main_duct_width/2),
                           main_duct_end_x - main_duct_start_x, main_duct_width,
                           fill=True, facecolor='lightblue', edgecolor='blue', linewidth=2)
     ax.add_patch(main_duct)
     
     # Add main duct label
-    ax.text(room_length/2, main_duct_y + 0.4, 'Магистральный воздуховод Ø250 мм',
+    ax.text(2 + room_length/2, main_duct_y + 0.35, 'Приточный воздуховод Ø160 мм',
             ha='center', fontsize=11, weight='bold', color='blue')
     
     # Calculate diffuser positions (evenly distributed)
-    # Place diffusers symmetrically along the main duct
-    spacing = (main_duct_end_x - main_duct_start_x) / (num_diffusers - 1)
+    spacing = (main_duct_end_x - main_duct_start_x) / (num_diffusers - 1) if num_diffusers > 1 else 0
     diffuser_positions = []
     
     for i in range(num_diffusers):
-        x_pos = main_duct_start_x + i * spacing
+        x_pos = main_duct_start_x + i * spacing if num_diffusers > 1 else 2 + room_length/2
         diffuser_positions.append((x_pos, main_duct_y))
     
     # Draw branch ducts and diffusers
@@ -114,46 +304,87 @@ def create_ventilation_scheme():
     # Add technical specifications box
     specs_text = (
         f"ТЕХНИЧЕСКИЕ ХАРАКТЕРИСТИКИ:\n"
-        f"─────────────────────────────\n"
+        f"──────────────────────────────────\n"
         f"Площадь помещения: {room_area} м²\n"
         f"Высота потолка: {ceiling_height} м\n"
-        f"Объем помещения: {room_area * ceiling_height:.1f} м³\n"
-        f"Воздухообмен: {air_exchange} м³/ч\n"
-        f"Кратность воздухообмена: {air_exchange / (room_area * ceiling_height):.1f} раз/ч\n\n"
+        f"Объем помещения: {calc['room_volume']:.1f} м³\n"
+        f"Воздухообмен: {calc['total_airflow']:.1f} м³/ч\n"
+        f"Кратность: {calc['air_changes']:.1f} раз/ч\n\n"
         f"ОБОРУДОВАНИЕ:\n"
-        f"─────────────────────────────\n"
-        f"Количество диффузоров: {num_diffusers} шт.\n"
-        f"Тип диффузора: ДПУ-М 125\n"
-        f"Диаметр магистрали: {main_duct_diameter} мм\n"
-        f"Диаметр ответвлений: {branch_duct_diameter} мм\n"
-        f"Расход на диффузор: {air_exchange/num_diffusers:.1f} м³/ч"
+        f"──────────────────────────────────\n"
+        f"Канальный вентилятор: Ø{supply_fan_diameter} мм\n"
+        f"Глушитель шума\n"
+        f"Фильтр воздуха\n"
+        f"Калорифер\n"
+        f"Приточный воздуховод: Ø{main_duct_diameter} мм\n"
+        f"Ответвления: Ø{branch_duct_diameter} мм\n"
+        f"Диффузоры: {num_diffusers} шт. (ДПУ-М 125)\n"
+        f"Расход на диффузор: {calc['airflow_per_diffuser']:.1f} м³/ч\n\n"
+        f"СКОРОСТИ ВОЗДУХА:\n"
+        f"──────────────────────────────────\n"
+        f"В магистрали: {calc['v_main']:.2f} м/с\n"
+        f"В ответвлениях: {calc['v_branch']:.2f} м/с\n"
+        f"На выходе вентилятора: {calc['v_fan']:.2f} м/с"
+    )
+    
+    # Pressure loss box
+    pl = calc['pressure_losses']
+    pressure_text = (
+        f"ПОТЕРИ ДАВЛЕНИЯ:\n"
+        f"──────────────────────────────────\n"
+        f"Магистраль: {pl['main_duct']:.1f} Па\n"
+        f"Ответвления: {pl['branch_ducts']:.1f} Па\n"
+        f"Выход вентилятора: {pl['fan_outlet']:.1f} Па\n"
+        f"Глушитель: {pl['silencer']:.1f} Па\n"
+        f"Фильтр: {pl['filter']:.1f} Па\n"
+        f"Калорифер: {pl['heater']:.1f} Па\n"
+        f"Тройники: {pl['branches']:.1f} Па\n"
+        f"Диффузоры: {pl['diffusers']:.1f} Па\n"
+        f"──────────────────────────────────\n"
+        f"ИТОГО: {pl['total']:.1f} Па\n"
+        f"С запасом (15%): {pl['total_with_safety']:.1f} Па\n\n"
+        f"Требуемое давление\n"
+        f"вентилятора: ≥{pl['total_with_safety']:.0f} Па"
     )
     
     # Add specs box with background
-    specs_box = FancyBboxPatch((room_length + 0.8, room_width - 5.5), 4.5, 5.3,
+    specs_box = FancyBboxPatch((2 + room_length + 0.8, room_width - 7.2), 5.2, 7.0,
                                boxstyle="round,pad=0.1", 
                                facecolor='lightyellow', edgecolor='black', linewidth=2)
     ax.add_patch(specs_box)
-    ax.text(room_length + 1.0, room_width - 0.4, specs_text,
-            fontsize=9, verticalalignment='top', family='monospace',
+    ax.text(2 + room_length + 1.0, room_width - 0.4, specs_text,
+            fontsize=8, verticalalignment='top', family='monospace',
+            bbox=dict(boxstyle='round', facecolor='none', edgecolor='none'))
+    
+    # Add pressure loss box
+    pressure_box = FancyBboxPatch((2 + room_length + 0.8, -1.2), 5.2, 5.8,
+                                 boxstyle="round,pad=0.1", 
+                                 facecolor='lightcyan', edgecolor='black', linewidth=2)
+    ax.add_patch(pressure_box)
+    ax.text(2 + room_length + 1.0, 4.4, pressure_text,
+            fontsize=8, verticalalignment='top', family='monospace',
             bbox=dict(boxstyle='round', facecolor='none', edgecolor='none'))
     
     # Add legend
     legend_elements = [
-        mpatches.Patch(facecolor='lightblue', edgecolor='blue', label='Магистральный воздуховод Ø250мм'),
+        mpatches.Patch(facecolor='lightcoral', edgecolor='darkred', label='Канальный вентилятор Ø315мм'),
+        mpatches.Patch(facecolor='lightgray', edgecolor='black', label='Глушитель'),
+        mpatches.Patch(facecolor='lightyellow', edgecolor='orange', label='Фильтр'),
+        mpatches.Patch(facecolor='lightpink', edgecolor='red', label='Калорифер'),
+        mpatches.Patch(facecolor='lightblue', edgecolor='blue', label='Приточный воздуховод Ø160мм'),
         mpatches.Patch(facecolor='lightgreen', edgecolor='green', label='Ответвление Ø125мм'),
         mpatches.Patch(facecolor='yellow', edgecolor='orange', label='Диффузор ДПУ-М 125')
     ]
     ax.legend(handles=legend_elements, loc='upper left', bbox_to_anchor=(0, -0.05),
-             ncol=3, fontsize=10, frameon=True)
+             ncol=4, fontsize=9, frameon=True)
     
     # Set title
-    plt.title('СХЕМА ВЕНТИЛЯЦИИ НЕЖИЛОГО ПОМЕЩЕНИЯ\n(План расположения воздуховодов и диффузоров)',
-             fontsize=16, weight='bold', pad=20)
+    plt.title('СХЕМА ПРИТОЧНОЙ ВЕНТИЛЯЦИИ НЕЖИЛОГО ПОМЕЩЕНИЯ\n(с расчетом количества диффузоров и потерь давления)',
+             fontsize=15, weight='bold', pad=20)
     
     # Set axis properties
-    ax.set_xlim(-2, room_length + 5.5)
-    ax.set_ylim(-1.5, room_width + 1)
+    ax.set_xlim(-3.5, 2 + room_length + 6.5)
+    ax.set_ylim(-2, room_width + 1)
     ax.set_aspect('equal')
     ax.grid(True, alpha=0.3, linestyle='--')
     ax.set_xlabel('Длина, м', fontsize=12, weight='bold')
@@ -164,9 +395,15 @@ def create_ventilation_scheme():
     plt.tight_layout()
     plt.savefig(output_file, dpi=300, bbox_inches='tight', facecolor='white')
     print(f"Схема вентиляции сохранена в файл: {output_file}")
+    print(f"\nРасчетные параметры:")
+    print(f"  Количество диффузоров: {num_diffusers} шт.")
+    print(f"  Общий воздухообмен: {calc['total_airflow']:.1f} м³/ч")
+    print(f"  Расход на диффузор: {calc['airflow_per_diffuser']:.1f} м³/ч")
+    print(f"  Общие потери давления: {pl['total']:.1f} Па")
+    print(f"  С запасом (15%): {pl['total_with_safety']:.1f} Па")
     
     return output_file
 
 if __name__ == "__main__":
     create_ventilation_scheme()
-    print("Визуализация успешно создана!")
+    print("\nВизуализация успешно создана!")
