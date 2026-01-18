@@ -13,7 +13,6 @@ Creates a schematic visualization of a ventilation system with:
 import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
 from matplotlib.patches import Rectangle, Circle, FancyBboxPatch
-import numpy as np
 
 def create_ventilation_scheme():
     """Generate the ventilation system schematic diagram."""
@@ -104,7 +103,7 @@ def create_ventilation_scheme():
         # Add diffuser label
         label_offset = 0.3 if direction == 1 else -0.3
         ax.text(x, diffuser_y + label_offset, f'ДПУ-М 125\n№{idx+1}',
-                ha='center', va='center' if direction == 1 else 'center',
+                ha='center', va='center',
                 fontsize=8, weight='bold')
         
         # Add branch duct diameter label (only for first few to avoid clutter)
