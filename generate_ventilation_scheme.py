@@ -108,7 +108,7 @@ def calculate_diffusers_and_pressure_loss():
     delta_P_branches = 1.5 * (air_density * v_branch**2 / 2) * num_diffusers
     
     # Diffusers: typical loss 10-20 Pa per diffuser
-    delta_P_diffusers = 15  # Pa per diffuser
+    delta_P_diffusers = 15 * num_diffusers  # Pa total for all diffusers
     
     # Total pressure loss
     total_pressure_loss = (delta_P_main + delta_P_branch + delta_P_fan_outlet + 
