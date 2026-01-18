@@ -1,19 +1,19 @@
 #!/usr/bin/env python3
 """
-Ventilation System Scheme Generator with Pressure Loss Calculations
+Генератор схемы системы вентиляции с расчетом потерь давления
 
-Creates a schematic visualization of supply and exhaust ventilation systems with:
-- Room: 152 m² (12m × 12.67m), height 2.91 m
-- Supply system (RED):
-  * Supply fan: Ø315mm
-  * Processing equipment: silencer (Ø250mm), filter, heater
-  * Main supply duct: Ø250mm → Ø160mm (with transition)
-  * Branch ducts: Ø125mm
-- Exhaust system (BLUE):
-  * Exhaust fan: Ø250mm
-  * Main exhaust duct: Ø160mm
-  * Branch ducts: Ø125mm
-- Calculates optimal number of diffusers/grilles and pressure losses for both systems
+Создает схематическую визуализацию приточной и вытяжной систем вентиляции:
+- Помещение: 152 м² (12м × 12.67м), высота 2.91 м
+- Приточная система (КРАСНЫЙ):
+  * Приточный вентилятор: Ø315мм
+  * Оборудование обработки: глушитель (Ø250мм), фильтр, нагреватель
+  * Главный приточный воздуховод: Ø250мм → Ø160мм (с переходом)
+  * Ответвления: Ø125мм
+- Вытяжная система (СИНИЙ):
+  * Вытяжной вентилятор: Ø250мм
+  * Главный вытяжной воздуховод: Ø160мм
+  * Ответвления: Ø125мм
+- Рассчитывает оптимальное количество диффузоров/решеток и потери давления для обеих систем
 """
 
 import matplotlib.pyplot as plt
@@ -22,126 +22,126 @@ from matplotlib.patches import Rectangle, Circle, FancyBboxPatch, FancyArrowPatc
 import math
 
 def calculate_diffusers_and_pressure_loss():
-    """Calculate optimal number of diffusers and pressure losses for supply system."""
+    """Рассчитать оптимальное количество диффузоров и потери давления для приточной системы."""
     
-    # Room parameters
+    # Параметры помещения
     room_area = 152  # m²
     ceiling_height = 2.91  # m
     room_volume = room_area * ceiling_height  # m³
     
-    # Air exchange requirements for non-residential space
-    # Using typical 6 air changes per hour for office/commercial space
+    # Требования к воздухообмену для нежилых помещений
+    # Используется типовое значение 6 кратностей в час для офиса/коммерческого помещения
     air_changes_per_hour = 6
     total_airflow = room_volume * air_changes_per_hour  # m³/h
     total_airflow_m3s = total_airflow / 3600  # m³/s
     
-    # Diffuser specifications (ДПУ-М 125)
+    # Технические характеристики диффузора (ДПУ-М 125)
     diffuser_diameter = 125  # mm
     diffuser_diameter_m = diffuser_diameter / 1000  # m
     
-    # Recommended airflow per diffuser: 150-250 m³/h for ДПУ-М 125
-    # Using 200 m³/h as optimal for comfort
+    # Рекомендуемый расход воздуха на диффузор: 150-250 м³/ч для ДПУ-М 125
+    # Используется 200 м³/ч как оптимальное значение для комфорта
     airflow_per_diffuser = 200  # m³/h
     
-    # Calculate number of diffusers
+    # Расчет количества диффузоров
     num_diffusers = math.ceil(total_airflow / airflow_per_diffuser)
     actual_airflow_per_diffuser = total_airflow / num_diffusers
     
-    # Air properties (at 20°C)
+    # Свойства воздуха (при 20°C)
     air_density = 1.2  # kg/m³
     air_viscosity = 1.81e-5  # Pa·s
     
-    # Duct dimensions
-    main_duct_diameter_1 = 250  # mm (initial section)
-    main_duct_diameter_2 = 160  # mm (after branching)
+    # Размеры воздуховодов
+    main_duct_diameter_1 = 250  # mm (начальный участок)
+    main_duct_diameter_2 = 160  # mm (после разветвления)
     branch_duct_diameter = 125  # mm
     supply_fan_diameter = 315  # mm
     silencer_diameter = 250  # mm
     
-    # Convert to meters
+    # Преобразование в метры
     D_main_1 = main_duct_diameter_1 / 1000
     D_main_2 = main_duct_diameter_2 / 1000
     D_branch = branch_duct_diameter / 1000
     D_fan = supply_fan_diameter / 1000
     
-    # Estimated duct lengths
-    main_duct_length_1 = 3  # m (250mm section before branching)
-    main_duct_length_2 = 10  # m (160mm section)
-    branch_duct_length = 2  # m (average branch length)
-    inlet_duct_length = 2  # m (from fan to room)
+    # Расчетная длина воздуховодов
+    main_duct_length_1 = 3  # m (участок 250мм до разветвления)
+    main_duct_length_2 = 10  # m (участок 160мм)
+    branch_duct_length = 2  # m (средняя длина ответвления)
+    inlet_duct_length = 2  # m (от вентилятора до помещения)
     
-    # Calculate velocities
-    v_main_1 = total_airflow_m3s / (math.pi * (D_main_1/2)**2)  # m/s in 250mm section
-    v_main_2 = total_airflow_m3s / (math.pi * (D_main_2/2)**2)  # m/s in 160mm section
-    v_branch = (actual_airflow_per_diffuser/3600) / (math.pi * (D_branch/2)**2)  # m/s
-    v_fan = total_airflow_m3s / (math.pi * (D_fan/2)**2)  # m/s
+    # Расчет скоростей
+    v_main_1 = total_airflow_m3s / (math.pi * (D_main_1/2)**2)  # м/с в участке 250мм
+    v_main_2 = total_airflow_m3s / (math.pi * (D_main_2/2)**2)  # м/с в участке 160мм
+    v_branch = (actual_airflow_per_diffuser/3600) / (math.pi * (D_branch/2)**2)  # м/с
+    v_fan = total_airflow_m3s / (math.pi * (D_fan/2)**2)  # м/с
     
-    # Pressure loss calculations
-    # 1. Friction losses in ducts (Darcy-Weisbach)
-    roughness = 0.0001  # m (for smooth metal ducts)
+    # Расчет потерь давления
+    # 1. Потери на трение в воздуховодах (формула Дарси-Вейсбаха)
+    roughness = 0.0001  # m (для гладких металлических воздуховодов)
     
-    # Reynolds number and friction factor for main duct section 1 (250mm)
+    # Число Рейнольдса и коэффициент трения для участка магистрали 1 (250мм)
     Re_main_1 = (air_density * v_main_1 * D_main_1) / air_viscosity
     if Re_main_1 < 2300:
         f_main_1 = 64 / Re_main_1
     else:
-        # Using Colebrook-White approximation (Swamee-Jain)
+        # Используется аппроксимация Колбрука-Уайта (Суоми-Джейн)
         f_main_1 = 0.25 / (math.log10(roughness/(3.7*D_main_1) + 5.74/Re_main_1**0.9))**2
     
-    # Friction loss in main duct section 1
+    # Потери на трение в участке магистрали 1
     delta_P_main_1 = f_main_1 * (main_duct_length_1 / D_main_1) * (air_density * v_main_1**2 / 2)
     
-    # Reynolds number and friction factor for main duct section 2 (160mm)
+    # Число Рейнольдса и коэффициент трения для участка магистрали 2 (160мм)
     Re_main_2 = (air_density * v_main_2 * D_main_2) / air_viscosity
     if Re_main_2 < 2300:
         f_main_2 = 64 / Re_main_2
     else:
         f_main_2 = 0.25 / (math.log10(roughness/(3.7*D_main_2) + 5.74/Re_main_2**0.9))**2
     
-    # Friction loss in main duct section 2
+    # Потери на трение в участке магистрали 2
     delta_P_main_2 = f_main_2 * (main_duct_length_2 / D_main_2) * (air_density * v_main_2**2 / 2)
     
-    # Total friction loss in main duct
+    # Полные потери на трение в магистрали
     delta_P_main = delta_P_main_1 + delta_P_main_2
     
-    # Reynolds number and friction factor for branch ducts
+    # Число Рейнольдса и коэффициент трения для ответвлений
     Re_branch = (air_density * v_branch * D_branch) / air_viscosity
     if Re_branch < 2300:
         f_branch = 64 / Re_branch
     else:
         f_branch = 0.25 / (math.log10(roughness/(3.7*D_branch) + 5.74/Re_branch**0.9))**2
     
-    # Friction loss in branch ducts (total for all branches)
+    # Потери на трение в ответвлениях (суммарно для всех ответвлений)
     delta_P_branch = f_branch * (branch_duct_length / D_branch) * (air_density * v_branch**2 / 2)
     
-    # 2. Local losses (fittings, transitions, etc.)
-    # Supply fan outlet: ζ = 1.0
+    # 2. Местные потери (фитинги, переходы и т.д.)
+    # Выход приточного вентилятора: ζ = 1.0
     delta_P_fan_outlet = 1.0 * (air_density * v_fan**2 / 2)
     
-    # Silencer (250mm): typical loss coefficient ζ = 1.5-3.0
+    # Глушитель (250мм): типовой коэффициент потерь ζ = 1.5-3.0
     delta_P_silencer = 2.5 * (air_density * v_main_1**2 / 2)
     
-    # Filter: typical loss 50-150 Pa for clean filter
+    # Фильтр: типовые потери 50-150 Па для чистого фильтра
     delta_P_filter = 100  # Pa
     
-    # Heater (caloripher): typical loss coefficient ζ = 2.0-4.0
+    # Калорифер: типовой коэффициент потерь ζ = 2.0-4.0
     delta_P_heater = 3.0 * (air_density * v_main_1**2 / 2)
     
-    # Transition from 250mm to 160mm: ζ = 0.2
+    # Переход с 250мм на 160мм: ζ = 0.2
     delta_P_transition = 0.2 * (air_density * v_main_2**2 / 2)
     
-    # Branch tees: ζ = 1.5 per branch
+    # Тройники для ответвлений: ζ = 1.5 на каждое ответвление
     delta_P_branches = 1.5 * (air_density * v_branch**2 / 2) * num_diffusers
     
-    # Diffusers: typical loss 10-20 Pa per diffuser
-    delta_P_diffusers = 15 * num_diffusers  # Pa total for all diffusers
+    # Диффузоры: типовые потери 10-20 Па на диффузор
+    delta_P_diffusers = 15 * num_diffusers  # Па суммарно для всех диффузоров
     
-    # Total pressure loss
+    # Полные потери давления
     total_pressure_loss = (delta_P_main + delta_P_branch + delta_P_fan_outlet + 
                           delta_P_silencer + delta_P_filter + delta_P_heater + 
                           delta_P_transition + delta_P_branches + delta_P_diffusers)
     
-    # Add safety factor of 10-15%
+    # Добавление коэффициента запаса 10-15%
     total_pressure_loss_with_safety = total_pressure_loss * 1.15
     
     return {
@@ -170,38 +170,38 @@ def calculate_diffusers_and_pressure_loss():
     }
 
 def calculate_exhaust_pressure_loss(num_grilles, total_airflow):
-    """Calculate pressure losses for exhaust system."""
+    """Рассчитать потери давления для вытяжной системы."""
     
     total_airflow_m3s = total_airflow / 3600  # m³/s
     
-    # Air properties (at 20°C)
+    # Свойства воздуха (при 20°C)
     air_density = 1.2  # kg/m³
     air_viscosity = 1.81e-5  # Pa·s
     
-    # Duct dimensions
+    # Размеры воздуховодов
     main_duct_diameter = 160  # mm
     branch_duct_diameter = 125  # mm
     exhaust_fan_diameter = 250  # mm
     
-    # Convert to meters
+    # Преобразование в метры
     D_main = main_duct_diameter / 1000
     D_branch = branch_duct_diameter / 1000
     D_fan = exhaust_fan_diameter / 1000
     
-    # Estimated duct lengths
+    # Расчетная длина воздуховодов
     main_duct_length = 8  # m
     branch_duct_length = 2  # m
     
-    # Calculate velocities
+    # Расчет скоростей
     airflow_per_grille = total_airflow / num_grilles
     v_main = total_airflow_m3s / (math.pi * (D_main/2)**2)
     v_branch = (airflow_per_grille/3600) / (math.pi * (D_branch/2)**2)
     v_fan = total_airflow_m3s / (math.pi * (D_fan/2)**2)
     
-    # Friction losses
+    # Потери на трение
     roughness = 0.0001  # m
     
-    # Main duct
+    # Магистральный воздуховод
     Re_main = (air_density * v_main * D_main) / air_viscosity
     if Re_main < 2300:
         f_main = 64 / Re_main
@@ -209,7 +209,7 @@ def calculate_exhaust_pressure_loss(num_grilles, total_airflow):
         f_main = 0.25 / (math.log10(roughness/(3.7*D_main) + 5.74/Re_main**0.9))**2
     delta_P_main = f_main * (main_duct_length / D_main) * (air_density * v_main**2 / 2)
     
-    # Branch ducts
+    # Ответвления
     Re_branch = (air_density * v_branch * D_branch) / air_viscosity
     if Re_branch < 2300:
         f_branch = 64 / Re_branch
@@ -217,7 +217,7 @@ def calculate_exhaust_pressure_loss(num_grilles, total_airflow):
         f_branch = 0.25 / (math.log10(roughness/(3.7*D_branch) + 5.74/Re_branch**0.9))**2
     delta_P_branch = f_branch * (branch_duct_length / D_branch) * (air_density * v_branch**2 / 2)
     
-    # Local losses
+    # Местные потери
     delta_P_fan_inlet = 1.0 * (air_density * v_fan**2 / 2)
     delta_P_branches = 1.2 * (air_density * v_branch**2 / 2) * num_grilles
     delta_P_grilles = 10 * num_grilles  # Pa
@@ -235,39 +235,39 @@ def calculate_exhaust_pressure_loss(num_grilles, total_airflow):
     }
 
 def create_ventilation_scheme():
-    """Generate the ventilation system schematic diagram with supply and exhaust."""
+    """Создать схему системы вентиляции с приточной и вытяжной системами."""
     
-    # Calculate system parameters
+    # Расчет параметров системы
     calc = calculate_diffusers_and_pressure_loss()
     exhaust_calc = calculate_exhaust_pressure_loss(calc['num_diffusers'], calc['total_airflow'])
     
-    # Room parameters
+    # Параметры помещения
     room_area = 152  # m²
     ceiling_height = 2.91  # m
     
-    # Room dimensions (rectangular) - adjusted for 152 m²
-    # Using approximately 12m x 12.67m
+    # Размеры помещения (прямоугольник) - скорректировано для 152 м²
+    # Используется приблизительно 12м × 12.67м
     room_width = 12.0  # m
     room_length = 12.67  # m
     
-    # Ventilation components
+    # Компоненты вентиляции
     num_diffusers = calc['num_diffusers']
-    main_duct_diameter_1 = 250  # mm (initial section)
-    main_duct_diameter_2 = 160  # mm (after branching)
+    main_duct_diameter_1 = 250  # mm (начальный участок)
+    main_duct_diameter_2 = 160  # mm (после разветвления)
     branch_duct_diameter = 125  # mm
     supply_fan_diameter = 315  # mm
     silencer_diameter = 250  # mm
-    exhaust_fan_diameter = 250  # mm (typical for exhaust)
+    exhaust_fan_diameter = 250  # mm (типовой для вытяжки)
     
-    # Create figure with appropriate size
+    # Создание графика с соответствующим размером
     fig, ax = plt.subplots(figsize=(20, 14))
     
-    # Draw room outline
+    # Отрисовка контура помещения
     room_rect = Rectangle((2, 0), room_length, room_width, 
                           fill=False, edgecolor='black', linewidth=2.5)
     ax.add_patch(room_rect)
     
-    # Add room dimensions
+    # Добавление размеров помещения
     ax.annotate('', xy=(2 + room_length, -0.5), xytext=(2, -0.5),
                 arrowprops=dict(arrowstyle='<->', color='black', lw=1.5))
     ax.text(2 + room_length/2, -0.8, f'{room_length} м', ha='center', fontsize=12, weight='bold')
@@ -277,11 +277,11 @@ def create_ventilation_scheme():
     ax.text(1.0, room_width/2, f'{room_width} м', ha='center', fontsize=12, 
             rotation=90, va='center', weight='bold')
     
-    # Draw supply system components (outside room on left side)
+    # Отрисовка компонентов приточной системы (снаружи помещения слева)
     component_x = -2.5
     component_y = room_width / 2
     
-    # Supply fan (315mm)
+    # Приточный вентилятор (315мм)
     fan = Circle((component_x, component_y), 0.4, 
                  fill=True, facecolor='lightcoral', edgecolor='darkred', linewidth=2)
     ax.add_patch(fan)
@@ -290,77 +290,77 @@ def create_ventilation_scheme():
     ax.text(component_x, component_y - 0.7, 'Вентилятор\nØ315 мм', 
             ha='center', fontsize=9, weight='bold')
     
-    # Components along the inlet duct
+    # Компоненты вдоль приточного воздуховода
     comp_spacing = 1.2
     
-    # Silencer
+    # Глушитель
     silencer_x = component_x + comp_spacing
     silencer = Rectangle((silencer_x - 0.15, component_y - 0.3), 0.3, 0.6,
                          fill=True, facecolor='lightgray', edgecolor='black', linewidth=1.5)
     ax.add_patch(silencer)
     ax.text(silencer_x, component_y + 0.6, 'Глушитель', ha='center', fontsize=8, weight='bold')
     
-    # Filter
+    # Фильтр
     filter_x = silencer_x + comp_spacing * 0.8
     filter_rect = Rectangle((filter_x - 0.15, component_y - 0.3), 0.3, 0.6,
                             fill=True, facecolor='lightyellow', edgecolor='orange', linewidth=1.5)
     ax.add_patch(filter_rect)
-    # Add filter pattern
+    # Добавление рисунка фильтра
     for i in range(5):
         ax.plot([filter_x - 0.1, filter_x + 0.1], 
                 [component_y - 0.2 + i*0.1, component_y - 0.2 + i*0.1], 
                 'orange', linewidth=1)
     ax.text(filter_x, component_y + 0.6, 'Фильтр', ha='center', fontsize=8, weight='bold')
     
-    # Heater (Caloripher)
+    # Калорифер
     heater_x = filter_x + comp_spacing * 0.8
     heater = Rectangle((heater_x - 0.15, component_y - 0.3), 0.3, 0.6,
                        fill=True, facecolor='lightpink', edgecolor='red', linewidth=1.5)
     ax.add_patch(heater)
     ax.text(heater_x, component_y + 0.6, 'Калорифер', ha='center', fontsize=8, weight='bold')
     
-    # Draw connecting ducts to room entrance (RED for supply)
-    # From fan to silencer
+    # Отрисовка соединительных воздуховодов до входа в помещение (КРАСНЫЙ для притока)
+    # От вентилятора до глушителя
     ax.plot([component_x + 0.4, silencer_x - 0.15], [component_y, component_y], 
             'red', linewidth=4)
-    # From silencer to filter
+    # От глушителя до фильтра
     ax.plot([silencer_x + 0.15, filter_x - 0.15], [component_y, component_y], 
             'red', linewidth=4)
-    # From filter to heater
+    # От фильтра до калорифера
     ax.plot([filter_x + 0.15, heater_x - 0.15], [component_y, component_y], 
             'red', linewidth=4)
-    # From heater to room entrance
+    # От калорифера до входа в помещение
     ax.plot([heater_x + 0.15, 2], [component_y, component_y], 
             'red', linewidth=4)
     
-    # Add arrow showing airflow direction
+    # Добавление стрелки, показывающей направление потока воздуха
     arrow = FancyArrowPatch((component_x - 0.6, component_y), (component_x - 0.45, component_y),
                            arrowstyle='->', mutation_scale=20, linewidth=2, color='red')
     ax.add_patch(arrow)
     ax.text(component_x - 0.8, component_y + 0.3, 'Приток', fontsize=9, weight='bold', color='red')
     
-    # SUPPLY SYSTEM - Main duct position (upper part of room)
-    supply_duct_y = room_width * 0.65  # Upper section for supply
+    # ПРИТОЧНАЯ СИСТЕМА - Положение магистрального воздуховода (верхняя часть помещения)
+    supply_duct_y = room_width * 0.65  # Верхний участок для притока
     supply_duct_start_x = 2.5
     supply_duct_end_x = 2 + room_length - 0.5
     
-    # Draw initial 250mm section (from entrance to first branch)
+    # Отрисовка начального участка 250мм (от входа до первого ответвления)
     initial_section_length = 2.0
-    main_duct_width_250 = 0.25  # representing 250mm in scale
+    main_duct_width_250 = 0.25  # представление 250мм в масштабе
     main_duct_250 = Rectangle((supply_duct_start_x, supply_duct_y - main_duct_width_250/2),
                               initial_section_length, main_duct_width_250,
                               fill=True, facecolor='lightcoral', edgecolor='red', linewidth=2)
     ax.add_patch(main_duct_250)
     
-    # Draw main duct 160mm section (after transition)
-    main_duct_width_160 = 0.16  # representing 160mm in scale
+    # Отрисовка участка магистрали 160мм (после перехода)
+    main_duct_width_160 = 0.16  # представление 160мм в масштабе
     transition_x = supply_duct_start_x + initial_section_length
     main_duct_160 = Rectangle((transition_x, supply_duct_y - main_duct_width_160/2),
                               supply_duct_end_x - transition_x, main_duct_width_160,
                               fill=True, facecolor='lightcoral', edgecolor='red', linewidth=2)
     ax.add_patch(main_duct_160)
     
-    # Draw transition from 250mm to 160mm
+    # Отрисовка перехода с 250мм на 160мм
     transition_points = [
         [transition_x, supply_duct_y - main_duct_width_250/2],
         [transition_x + 0.3, supply_duct_y - main_duct_width_160/2],
@@ -370,17 +370,17 @@ def create_ventilation_scheme():
     transition = Polygon(transition_points, fill=True, facecolor='coral', edgecolor='red', linewidth=2)
     ax.add_patch(transition)
     
-    # Connection from room entrance to supply duct
+    # Соединение от входа в помещение до приточного воздуховода
     ax.plot([2, supply_duct_start_x], [component_y, supply_duct_y], 
             'red', linewidth=4, linestyle='--')
     
-    # Add supply duct labels
+    # Добавление надписей приточного воздуховода
     ax.text(supply_duct_start_x + 1.0, supply_duct_y + 0.35, 'Ø250 мм',
             ha='center', fontsize=10, weight='bold', color='red')
     ax.text(2 + room_length/2, supply_duct_y + 0.35, 'Приточный воздуховод Ø160 мм',
             ha='center', fontsize=11, weight='bold', color='red')
     
-    # Calculate diffuser positions (evenly distributed) - start after transition
+    # Расчет положения диффузоров (равномерно распределены) - начало после перехода
     diffuser_start_x = transition_x + 0.5
     diffuser_span = supply_duct_end_x - diffuser_start_x
     spacing = diffuser_span / (num_diffusers - 1) if num_diffusers > 1 else 0
@@ -390,54 +390,54 @@ def create_ventilation_scheme():
         x_pos = diffuser_start_x + i * spacing if num_diffusers > 1 else 2 + room_length/2
         diffuser_positions.append((x_pos, supply_duct_y))
     
-    # Draw SUPPLY branch ducts and diffusers
-    branch_width = 0.125  # representing 125mm in scale
-    branch_length = 1.5  # length of branch duct
+    # Отрисовка ПРИТОЧНЫХ ответвлений и диффузоров
+    branch_width = 0.125  # представление 125мм в масштабе
+    branch_length = 1.5  # длина ответвления
     
     for idx, (x, y) in enumerate(diffuser_positions):
-        # All branches go upward for supply
+        # Все ответвления направлены вверх для притока
         direction = 1
         
-        # Draw branch duct (red for supply)
+        # Отрисовка ответвления (красный для притока)
         branch = Rectangle((x - branch_width/2, y + main_duct_width_160/2),
                           branch_width, branch_length,
                           fill=True, facecolor='mistyrose', edgecolor='red', linewidth=1.5)
         ax.add_patch(branch)
         
-        # Draw diffuser (ДПУ-М 125)
+        # Отрисовка диффузора (ДПУ-М 125)
         diffuser_y = y + main_duct_width_160/2 + branch_length
         diffuser = Circle((x, diffuser_y), 0.15, 
                          fill=True, facecolor='yellow', edgecolor='orange', linewidth=2)
         ax.add_patch(diffuser)
         
-        # Add diffuser label
+        # Добавление надписи диффузора
         label_offset = 0.3
         ax.text(x, diffuser_y + label_offset, f'ДПУ-М 125\n№{idx+1}',
                 ha='center', va='center',
                 fontsize=8, weight='bold')
         
-        # Add branch duct diameter label (only for first few to avoid clutter)
+        # Добавление надписи диаметра ответвления (только для первых нескольких, чтобы избежать загромождения)
         if idx < 3 or idx == num_diffusers - 1:
             branch_label_y = y + main_duct_width_160/2 + branch_length/2
             ax.text(x + 0.35, branch_label_y, 'Ø125', fontsize=7, color='red', rotation=90, va='center')
     
-    # EXHAUST SYSTEM - Lower part of room
-    exhaust_duct_y = room_width * 0.35  # Lower section for exhaust
+    # ВЫТЯЖНАЯ СИСТЕМА - Нижняя часть помещения
+    exhaust_duct_y = room_width * 0.35  # Нижний участок для вытяжки
     exhaust_duct_start_x = 2.5
     exhaust_duct_end_x = 2 + room_length - 0.5
     
-    # Draw exhaust main duct (160mm)
+    # Отрисовка вытяжного магистрального воздуховода (160мм)
     exhaust_duct_width = 0.16
     exhaust_main = Rectangle((exhaust_duct_start_x, exhaust_duct_y - exhaust_duct_width/2),
                              exhaust_duct_end_x - exhaust_duct_start_x, exhaust_duct_width,
                              fill=True, facecolor='lightblue', edgecolor='blue', linewidth=2)
     ax.add_patch(exhaust_main)
     
-    # Add exhaust duct label
+    # Добавление надписи вытяжного воздуховода
     ax.text(2 + room_length/2, exhaust_duct_y - 0.35, 'Вытяжной воздуховод Ø160 мм',
             ha='center', fontsize=11, weight='bold', color='blue')
     
-    # Calculate exhaust grille positions (same number as supply diffusers)
+    # Расчет положения вытяжных решеток (такое же количество, как приточных диффузоров)
     num_grilles = num_diffusers
     exhaust_span = exhaust_duct_end_x - exhaust_duct_start_x
     exhaust_spacing = exhaust_span / (num_grilles - 1) if num_grilles > 1 else 0
@@ -446,43 +446,43 @@ def create_ventilation_scheme():
         x_pos = exhaust_duct_start_x + i * exhaust_spacing if num_grilles > 1 else 2 + room_length/2
         grille_positions.append((x_pos, exhaust_duct_y))
     
-    # Draw EXHAUST branch ducts and grilles
+    # Отрисовка ВЫТЯЖНЫХ ответвлений и решеток
     for idx, (x, y) in enumerate(grille_positions):
-        # All branches go downward for exhaust
+        # Все ответвления направлены вниз для вытяжки
         direction = -1
         
-        # Draw branch duct (blue for exhaust)
+        # Отрисовка ответвления (синий для вытяжки)
         branch = Rectangle((x - branch_width/2, y - exhaust_duct_width/2 - branch_length),
                           branch_width, branch_length,
                           fill=True, facecolor='lightcyan', edgecolor='blue', linewidth=1.5)
         ax.add_patch(branch)
         
-        # Draw exhaust grille
+        # Отрисовка вытяжной решетки
         grille_y = y - exhaust_duct_width/2 - branch_length
         grille = Circle((x, grille_y), 0.15, 
                        fill=True, facecolor='lightyellow', edgecolor='darkorange', linewidth=2)
         ax.add_patch(grille)
         
-        # Add grille label
+        # Добавление надписи решетки
         label_offset = -0.3
         ax.text(x, grille_y + label_offset, f'Решетка\n№{idx+1}',
                 ha='center', va='center',
                 fontsize=8, weight='bold')
         
-        # Add branch duct diameter label (only for first few to avoid clutter)
+        # Добавление надписи диаметра ответвления (только для первых нескольких, чтобы избежать загромождения)
         if idx < 3 or idx == num_grilles - 1:
             branch_label_y = y - exhaust_duct_width/2 - branch_length/2
             ax.text(x - 0.35, branch_label_y, 'Ø125', fontsize=7, color='blue', rotation=90, va='center')
     
-    # Draw exhaust fan on right side outside room
+    # Отрисовка вытяжного вентилятора с правой стороны снаружи помещения
     exhaust_fan_x = 2 + room_length + 1.5
     exhaust_fan_y = exhaust_duct_y
     
-    # Connect exhaust duct to fan
+    # Соединение вытяжного воздуховода с вентилятором
     ax.plot([exhaust_duct_end_x, exhaust_fan_x - 0.35], [exhaust_duct_y, exhaust_fan_y], 
             'blue', linewidth=4, linestyle='--')
     
-    # Exhaust fan (250mm)
+    # Вытяжной вентилятор (250мм)
     exhaust_fan = Circle((exhaust_fan_x, exhaust_fan_y), 0.35, 
                         fill=True, facecolor='lightblue', edgecolor='darkblue', linewidth=2)
     ax.add_patch(exhaust_fan)
@@ -491,14 +491,14 @@ def create_ventilation_scheme():
     ax.text(exhaust_fan_x, exhaust_fan_y - 0.6, 'Вытяжной\nвентилятор\nØ250 мм', 
             ha='center', fontsize=9, weight='bold')
     
-    # Add arrow showing exhaust airflow direction
+    # Добавление стрелки, показывающей направление вытяжного потока воздуха
     exhaust_arrow = FancyArrowPatch((exhaust_fan_x + 0.35, exhaust_fan_y), 
                                    (exhaust_fan_x + 0.55, exhaust_fan_y),
                                    arrowstyle='->', mutation_scale=20, linewidth=2, color='blue')
     ax.add_patch(exhaust_arrow)
     ax.text(exhaust_fan_x + 0.75, exhaust_fan_y + 0.3, 'Вытяжка', fontsize=9, weight='bold', color='blue')
     
-    # Add technical specifications box
+    # Добавление блока технических характеристик
     specs_text = (
         f"ТЕХНИЧЕСКИЕ ХАРАКТЕРИСТИКИ:\n"
         f"──────────────────────────────────\n"
@@ -531,7 +531,7 @@ def create_ventilation_scheme():
         f"На выходе вентилятора: {calc['v_fan']:.2f} м/с"
     )
     
-    # Pressure loss box
+    # Блок потерь давления
     pl = calc['pressure_losses']
     pl_exhaust = exhaust_calc
     pressure_text = (
@@ -555,7 +555,7 @@ def create_ventilation_scheme():
         f"С запасом (15%): {pl_exhaust['total_with_safety']:.1f} Па"
     )
     
-    # Add specs box with background
+    # Добавление блока характеристик с фоном
     specs_box = FancyBboxPatch((2 + room_length + 0.8, room_width - 7.2), 5.2, 7.0,
                                boxstyle="round,pad=0.1", 
                                facecolor='lightyellow', edgecolor='black', linewidth=2)
@@ -564,7 +564,7 @@ def create_ventilation_scheme():
             fontsize=8, verticalalignment='top', family='monospace',
             bbox=dict(boxstyle='round', facecolor='none', edgecolor='none'))
     
-    # Add pressure loss box
+    # Добавление блока потерь давления
     pressure_box = FancyBboxPatch((2 + room_length + 0.8, -1.2), 5.2, 5.8,
                                  boxstyle="round,pad=0.1", 
                                  facecolor='lightcyan', edgecolor='black', linewidth=2)
@@ -573,7 +573,7 @@ def create_ventilation_scheme():
             fontsize=8, verticalalignment='top', family='monospace',
             bbox=dict(boxstyle='round', facecolor='none', edgecolor='none'))
     
-    # Add legend
+    # Добавление легенды
     legend_elements = [
         mpatches.Patch(facecolor='lightcoral', edgecolor='darkred', label='Приточный вентилятор Ø315мм'),
         mpatches.Patch(facecolor='lightblue', edgecolor='darkblue', label='Вытяжной вентилятор Ø250мм'),
@@ -587,11 +587,11 @@ def create_ventilation_scheme():
     ax.legend(handles=legend_elements, loc='upper left', bbox_to_anchor=(0, -0.05),
              ncol=4, fontsize=9, frameon=True)
     
-    # Set title
+    # Установка заголовка
     plt.title('СХЕМА ПРИТОЧНО-ВЫТЯЖНОЙ ВЕНТИЛЯЦИИ НЕЖИЛОГО ПОМЕЩЕНИЯ\n(с расчетом количества диффузоров и потерь давления)',
              fontsize=15, weight='bold', pad=20)
     
-    # Set axis properties
+    # Установка свойств осей
     ax.set_xlim(-3.5, 2 + room_length + 6.5)
     ax.set_ylim(-2, room_width + 1)
     ax.set_aspect('equal')
@@ -599,7 +599,7 @@ def create_ventilation_scheme():
     ax.set_xlabel('Длина, м', fontsize=12, weight='bold')
     ax.set_ylabel('Ширина, м', fontsize=12, weight='bold')
     
-    # Save the figure
+    # Сохранение графика
     output_file = 'ventilation_scheme.png'
     plt.tight_layout()
     plt.savefig(output_file, dpi=300, bbox_inches='tight', facecolor='white')

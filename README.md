@@ -1,157 +1,157 @@
-# Ventilation Project
+# Проект системы вентиляции
 
-This repository contains designs and resources for a combined supply and exhaust ventilation system in a 152 sq.m. non-residential room with a ceiling height of 2.91 m. The project includes automatic calculation of the optimal number of diffusers and pressure losses along both supply and exhaust routes.
+Этот репозиторий содержит проекты и ресурсы для комбинированной приточно-вытяжной системы вентиляции в нежилом помещении площадью 152 кв.м с высотой потолка 2,91 м. Проект включает автоматический расчет оптимального количества диффузоров и потерь давления по приточному и вытяжному трактам.
 
-## Project Specifications
+## Технические характеристики проекта
 
-### Room Parameters
-- **Room Area:** 152 m²
-- **Room Dimensions:** 12.0 m × 12.67 m
-- **Ceiling Height:** 2.91 m
-- **Air Exchange Rate:** 6 air changes per hour (typical for office/commercial spaces)
+### Параметры помещения
+- **Площадь помещения:** 152 м²
+- **Размеры помещения:** 12,0 м × 12,67 м
+- **Высота потолка:** 2,91 м
+- **Кратность воздухообмена:** 6 раз в час (типовое значение для офисных/коммерческих помещений)
 
-### Supply Ventilation System (Red)
-- **Supply Fan:** Ø315 mm channel fan
-- **Processing Equipment:**
-  - Silencer (Ø250mm for noise reduction)
-  - Air filter
-  - Heater (caloripher)
-- **Main Supply Duct:** Ø250 mm initially, then transitions to Ø160 mm
-- **Branch Ducts:** Ø125 mm
-- **Supply Diffusers:** ДПУ-М 125 (automatically calculated quantity)
+### Приточная система вентиляции (Красный цвет)
+- **Приточный вентилятор:** Канальный вентилятор Ø315 мм
+- **Оборудование обработки:**
+  - Глушитель (Ø250мм для шумоподавления)
+  - Воздушный фильтр
+  - Нагреватель (калорифер)
+- **Главный приточный воздуховод:** Ø250 мм с переходом на Ø160 мм
+- **Ответвления:** Ø125 мм
+- **Приточные диффузоры:** ДПУ-М 125 (количество рассчитывается автоматически)
 
-### Exhaust Ventilation System (Blue)
-- **Exhaust Fan:** Ø250 mm channel fan
-- **Main Exhaust Duct:** Ø160 mm
-- **Branch Ducts:** Ø125 mm
-- **Exhaust Grilles:** Ø125 mm (automatically calculated quantity)
+### Вытяжная система вентиляции (Синий цвет)
+- **Вытяжной вентилятор:** Канальный вентилятор Ø250 мм
+- **Главный вытяжной воздуховод:** Ø160 мм
+- **Ответвления:** Ø125 мм
+- **Вытяжные решетки:** Ø125 мм (количество рассчитывается автоматически)
 
-## Features
+## Возможности
 
-### Automatic Calculations
+### Автоматические расчеты
 
-The system automatically calculates:
+Система автоматически рассчитывает:
 
-1. **Optimal Number of Diffusers/Grilles**
-   - Based on room volume and air exchange requirements
-   - Considers recommended airflow per diffuser (150-250 m³/h for ДПУ-М 125)
-   - Ensures comfortable air distribution
-   - Result: 14 supply diffusers and 14 exhaust grilles
+1. **Оптимальное количество диффузоров/решеток**
+   - На основе объема помещения и требований к воздухообмену
+   - Учитывает рекомендуемый расход воздуха на диффузор (150-250 м³/ч для ДПУ-М 125)
+   - Обеспечивает комфортное распределение воздуха
+   - Результат: 14 приточных диффузоров и 14 вытяжных решеток
 
-2. **Supply System Pressure Loss Calculations**
-   - Friction losses in main ducts (both Ø250mm and Ø160mm sections)
-   - Friction losses in branch ducts (Darcy-Weisbach equation)
-   - Local losses in equipment:
-     - Supply fan outlet
-     - Silencer (Ø250mm)
-     - Air filter
-     - Heater (caloripher)
-     - Duct transition (Ø250mm → Ø160mm)
-     - Branch tees
-     - Diffusers
-   - Total pressure loss with 15% safety factor
-   - Required supply fan pressure specification
+2. **Расчет потерь давления в приточной системе**
+   - Потери на трение в главных воздуховодах (секции Ø250мм и Ø160мм)
+   - Потери на трение в ответвлениях (уравнение Дарси-Вейсбаха)
+   - Местные потери в оборудовании:
+     - Выход приточного вентилятора
+     - Глушитель (Ø250мм)
+     - Воздушный фильтр
+     - Нагреватель (калорифер)
+     - Переход воздуховода (Ø250мм → Ø160мм)
+     - Тройники ответвлений
+     - Диффузоры
+   - Общие потери давления с коэффициентом запаса 15%
+   - Требуемое давление приточного вентилятора
 
-3. **Exhaust System Pressure Loss Calculations**
-   - Friction losses in main duct (Ø160mm)
-   - Friction losses in branch ducts
-   - Local losses:
-     - Exhaust fan inlet
-     - Branch tees
-     - Exhaust grilles
-   - Total pressure loss with 15% safety factor
-   - Required exhaust fan pressure specification
+3. **Расчет потерь давления в вытяжной системе**
+   - Потери на трение в главном воздуховоде (Ø160мм)
+   - Потери на трение в ответвлениях
+   - Местные потери:
+     - Вход вытяжного вентилятора
+     - Тройники ответвлений
+     - Вытяжные решетки
+   - Общие потери давления с коэффициентом запаса 15%
+   - Требуемое давление вытяжного вентилятора
 
-4. **Air Velocities**
-   - Supply main duct (Ø250mm section): ~6.2 m/s
-   - Supply main duct (Ø160mm section): ~15.1 m/s
-   - Supply branch ducts: ~4.3 m/s
-   - Exhaust main duct: ~15.1 m/s
-   - Exhaust branch ducts: ~4.3 m/s
+4. **Скорости воздуха**
+   - Приточный главный воздуховод (секция Ø250мм): ~6,2 м/с
+   - Приточный главный воздуховод (секция Ø160мм): ~15,1 м/с
+   - Приточные ответвления: ~4,3 м/с
+   - Вытяжной главный воздуховод: ~15,1 м/с
+   - Вытяжные ответвления: ~4,3 м/с
 
-## Usage
+## Использование
 
-### Installation
+### Установка
 
-Install the required Python dependencies:
+Установите необходимые зависимости Python:
 
 ```bash
 pip install -r requirements.txt
 ```
 
-### Generate Ventilation Scheme
+### Генерация схемы вентиляции
 
-Run the generator script to create the ventilation scheme PNG:
+Запустите скрипт генератора для создания схемы вентиляции в формате PNG:
 
 ```bash
 python3 generate_ventilation_scheme.py
 ```
 
-This will create `ventilation_scheme.png` with a complete schematic diagram of both supply and exhaust ventilation systems.
+Это создаст файл `ventilation_scheme.png` с полной схемой приточной и вытяжной систем вентиляции.
 
-## Output
+## Результат
 
-The generated scheme includes:
+Сгенерированная схема включает:
 
-### Visual Components
-- Room outline with precise dimensions (12.0m × 12.67m)
-- **Supply system (RED color)**:
-  - Supply fan (Ø315 mm) positioned outside the room (left side)
-  - Processing equipment (silencer Ø250mm, filter, heater) in sequence
-  - Supply duct starting at Ø250mm, transitioning to Ø160mm
-  - 14 supply diffusers (ДПУ-М 125) at the top with branch ducts
-- **Exhaust system (BLUE color)**:
-  - Exhaust fan (Ø250 mm) positioned outside the room (right side)
-  - Main exhaust duct (Ø160mm)
-  - 14 exhaust grilles at the bottom with branch ducts
-- Color-coded components with comprehensive legend
-- Airflow direction indicators
+### Визуальные компоненты
+- Контур помещения с точными размерами (12,0м × 12,67м)
+- **Приточная система (КРАСНЫЙ цвет)**:
+  - Приточный вентилятор (Ø315 мм) расположен снаружи помещения (слева)
+  - Оборудование обработки (глушитель Ø250мм, фильтр, нагреватель) последовательно
+  - Приточный воздуховод начинается с Ø250мм, переходит на Ø160мм
+  - 14 приточных диффузоров (ДПУ-М 125) сверху с ответвлениями
+- **Вытяжная система (СИНИЙ цвет)**:
+  - Вытяжной вентилятор (Ø250 мм) расположен снаружи помещения (справа)
+  - Главный вытяжной воздуховод (Ø160мм)
+  - 14 вытяжных решеток снизу с ответвлениями
+- Цветовая кодировка компонентов с подробной легендой
+- Указатели направления воздушного потока
 
-### Technical Specifications Panel
-- Room parameters (area, dimensions, height, volume)
-- Air exchange rate and total airflow (~2654 m³/h)
-- Complete equipment list for both systems
-- Number of diffusers/grilles and airflow per unit
-- Air velocities in all duct sections
+### Панель технических характеристик
+- Параметры помещения (площадь, размеры, высота, объем)
+- Кратность воздухообмена и общий расход воздуха (~2654 м³/ч)
+- Полный перечень оборудования для обеих систем
+- Количество диффузоров/решеток и расход на единицу
+- Скорости воздуха во всех участках воздуховодов
 
-### Pressure Loss Analysis Panel
-- **Supply System** detailed breakdown:
-  - Main duct friction losses (Ø250mm + Ø160mm sections)
-  - Branch duct friction losses
-  - Equipment losses (fan outlet, silencer, filter, heater)
-  - Transition loss (Ø250mm → Ø160mm)
-  - Local losses (tees, diffusers)
-  - Total: ~2851 Pa
-  - Required fan pressure: ≥2851 Pa (with safety factor)
-- **Exhaust System** detailed breakdown:
-  - Main duct friction losses
-  - Branch duct friction losses
-  - Fan inlet losses
-  - Local losses (tees, grilles)
-  - Total: ~1404 Pa
-  - Required fan pressure: ≥1404 Pa (with safety factor)
+### Панель анализа потерь давления
+- **Приточная система** - детальная разбивка:
+  - Потери на трение в главном воздуховоде (секции Ø250мм + Ø160мм)
+  - Потери на трение в ответвлениях
+  - Потери в оборудовании (выход вентилятора, глушитель, фильтр, нагреватель)
+  - Потери в переходе (Ø250мм → Ø160мм)
+  - Местные потери (тройники, диффузоры)
+  - Итого: ~2851 Па
+  - Требуемое давление вентилятора: ≥2851 Па (с коэффициентом запаса)
+- **Вытяжная система** - детальная разбивка:
+  - Потери на трение в главном воздуховоде
+  - Потери на трение в ответвлениях
+  - Потери на входе вентилятора
+  - Местные потери (тройники, решетки)
+  - Итого: ~1404 Па
+  - Требуемое давление вентилятора: ≥1404 Па (с коэффициентом запаса)
 
-## Example Output
+## Пример результата
 
-The script calculates and displays:
-- **Room area:** 152 m² (12.0m × 12.67m)
-- **Calculated supply diffusers:** 14 units
-- **Calculated exhaust grilles:** 14 units
-- **Total airflow:** ~2654 m³/h
-- **Airflow per diffuser:** ~190 m³/h
-- **Supply pressure loss:** ~2851 Pa
-- **Exhaust pressure loss:** ~1404 Pa
+Скрипт рассчитывает и отображает:
+- **Площадь помещения:** 152 м² (12,0м × 12,67м)
+- **Рассчитанное количество приточных диффузоров:** 14 единиц
+- **Рассчитанное количество вытяжных решеток:** 14 единиц
+- **Общий расход воздуха:** ~2654 м³/ч
+- **Расход на диффузор:** ~190 м³/ч
+- **Потери давления в приточной системе:** ~2851 Па
+- **Потери давления в вытяжной системе:** ~1404 Па
 
-## Engineering Notes
+## Инженерные примечания
 
-The pressure loss calculations follow standard HVAC engineering practices:
-- Reynolds number calculations for flow regime determination
-- Colebrook-White equation for friction factor (turbulent flow)
-- Standard loss coefficients for fittings and equipment
-- Air properties at 20°C (density: 1.2 kg/m³)
-- Separate calculations for supply and exhaust systems
-- Duct transition losses accounted for
+Расчеты потерь давления выполнены в соответствии со стандартными методиками расчета систем вентиляции:
+- Расчет числа Рейнольдса для определения режима течения
+- Уравнение Кольбрука-Уайта для коэффициента трения (турбулентный поток)
+- Стандартные коэффициенты местных сопротивлений для фитингов и оборудования
+- Свойства воздуха при 20°C (плотность: 1,2 кг/м³)
+- Раздельные расчеты для приточной и вытяжной систем
+- Учтены потери в переходах воздуховодов
 
-## Note on DWG Format
+## Примечание о формате DWG
 
-The script generates high-quality PNG output (300 DPI). For DWG (AutoCAD) format output, specialized CAD software would be required as DWG is a proprietary binary format. The PNG output can be imported into CAD software for further editing if needed.
+Скрипт генерирует высококачественный PNG файл (300 DPI). Для получения файла в формате DWG (AutoCAD) потребуется специализированное CAD программное обеспечение, так как DWG является проприетарным бинарным форматом. PNG файл можно импортировать в CAD программу для дальнейшего редактирования при необходимости.
